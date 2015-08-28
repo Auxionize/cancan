@@ -12,13 +12,15 @@
     "url": "https://github.com/vdemedes/cancan/issues"
   },
   "dependencies": {
+    "co": "^4.6.0",
     "equals": "^1.0.0",
     "is-function": "^1.0.1",
     "is-plain-obj": "^1.0.0",
     "isarray": "0.0.1"
   },
   "devDependencies": {
-    "chai": "^1.10.0",
+    "chai": "^3.2.0",
+    "chai-as-promised": "^5.1.0",
     "make-lint": "^1.0.1",
     "mocha": "^2.1.0"
   },
