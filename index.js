@@ -84,7 +84,7 @@ function can(model, action, target) {
 	config.call(ability, model);
 
 	// test for access
-	return co(ability.test, action, target);
+	return co(ability.test.bind(ability), action, target);
 }
 
 
