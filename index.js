@@ -9,6 +9,7 @@ var isFunction = require('is-function');
 var isArray = require('isarray');
 var equals = require('equals');
 var format = require('util').format;
+var co = require('co');
 
 
 /**
@@ -56,11 +57,11 @@ function configure(entity, config) {
  * @param  {Object} model  - class/entity instance
  * @param  {String} action - action name
  * @param  {Object} target - target instance
- * @return {Boolean}
+ * @return {Promise.<Boolean>}
  */
 
 function can(model, action, target) {
-	var config;
+	var config = false;
 
 	// find a configuration for a model
 	entityConfigs.forEach(function (item) {
@@ -83,17 +84,18 @@ function can(model, action, target) {
 	config.call(ability, model);
 
 	// test for access
-	return ability.test(action, target);
+	return co(ability.test, action, target);
 }
 
 
 /**
  * Return negated result of #can()
- * @return {Boolean}
+ * @return {Promise.<Boolean>}
  */
 
 function cannot() {
-	return !can.apply(null, arguments);
+	return can.apply(null, arguments)
+		.then(function (result) { return !result; });
 }
 
 
@@ -103,14 +105,17 @@ function cannot() {
  */
 
 function authorize() {
-	var result = can.apply(null, arguments);
+	return can.apply(null, arguments)
+		.then(function (result) {
+			if (!result) {
+				var err = new Error('Not authorized');
+				err.status = 401;
 
-	if (!result) {
-		var err = new Error('Not authorized');
-		err.status = 401;
+				return new Promise.reject(err);
+			}
 
-		throw err;
-	}
+			return result;
+		});
 }
 
 
@@ -175,12 +180,12 @@ Ability.prototype.addRule = function addRule(actions, targets, attrs) {
  * @return {Boolean}
  */
 
-Ability.prototype.test = function test(action, target) {
+Ability.prototype.test = function* test(action, target) {
 	// find a rule that matches the requested action and target
 	for (var i = 0; i < this.rules.length; i++) {
 		if (actionMatches(action, this.rules[i]) &&
 			targetMatches(target, this.rules[i]) &&
-			attrsMatch(target, this.rules[i])) {
+			(yield attrsMatch(target, this.rules[i]))) {
 			return true;
 		}
 	}
