@@ -111,7 +111,7 @@ function authorize() {
 				var err = new Error('Not authorized');
 				err.status = 401;
 
-				return new Promise.reject(err);
+				return Promise.reject(err);
 			}
 
 			return result;
