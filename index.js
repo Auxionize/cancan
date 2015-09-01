@@ -249,12 +249,12 @@ function attrsMatch(target, rule) {
 	// test if rule's requirements
 	// are satisfied
 	if (isPlainObject(rule.attrs)) {
-		return matches(target, rule.attrs);
+		return Promise.resolve(matches(target, rule.attrs));
 	}
 
 	// unknown type of attributes
 	// or no required attributes at all
-	return true;
+	return Promise.resolve(true);
 }
 
 
