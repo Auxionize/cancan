@@ -59,32 +59,32 @@ function configure(entity, config) {
  * @param  {Object} target - target instance
  * @return {Promise.<Boolean>}
  */
-
 function can(model, action, target) {
 	var config = false;
 
 	// find a configuration for a model
-	entityConfigs.forEach(function (item) {
-		// check if model is an instance of
-		// the current entity
-		if (model.constructor === item.entity) {
-			config = item.config;
+	let abilities = entityConfigs
+		.filter(function (item) {
+			// check if model is an instance of the current entity
+			return isFunction(item.config) && model.constructor === item.entity
+		})
+		.map(function (item) {
+			// configure rules for this entity instance
+			var ability = new Ability();
+			item.config.call(ability, model);
+
+			return ability;
+		});
+
+	return co(function* () {
+		for (let i = 0; i < abilities.length; i++) {
+			if (yield abilities[i].test(action, target)) {
+				return true;
+			}
 		}
-	});
 
-	// no configuration found for
-	// the current model, quit
-	if (!config) {
 		return false;
-	}
-
-	// configure rules for
-	// this entity instance
-	var ability = new Ability();
-	config.call(ability, model);
-
-	// test for access
-	return co(ability.test.bind(ability), action, target);
+	});
 }
 
 
