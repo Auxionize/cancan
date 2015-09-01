@@ -60,8 +60,6 @@ function configure(entity, config) {
  * @return {Promise.<Boolean>}
  */
 function can(model, action, target) {
-	var config = false;
-
 	// find a configuration for a model
 	let abilities = entityConfigs
 		.filter(function (item) {
@@ -265,7 +263,7 @@ function attrsMatch(target, rule) {
  *
  * @param  {Object} model    - target object
  * @param  {String} property - wanted property
- * @return {Mixed}
+ * @return {*}
  */
 
 function get(model, property) {
