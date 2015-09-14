@@ -74,9 +74,11 @@ function can(model, action, target) {
 			return ability;
 		});
 
+	let args = Array.prototype.slice.call(arguments, 1);
+
 	return co(function* () {
 		for (let i = 0; i < abilities.length; i++) {
-			if (yield abilities[i].test(action, target)) {
+			if (yield abilities[i].test.apply(abilities[i], args)) {
 				return true;
 			}
 		}
@@ -179,11 +181,13 @@ Ability.prototype.addRule = function addRule(actions, targets, attrs) {
  */
 
 Ability.prototype.test = function* test(action, target) {
+	let args = Array.prototype.slice.call(arguments, 1);
+
 	// find a rule that matches the requested action and target
 	for (var i = 0; i < this.rules.length; i++) {
 		if (actionMatches(action, this.rules[i]) &&
 			targetMatches(target, this.rules[i]) &&
-			(yield attrsMatch(target, this.rules[i]))) {
+			(yield attrsMatch(args, this.rules[i]))) {
 			return true;
 		}
 	}
@@ -241,13 +245,13 @@ function attrsMatch(target, rule) {
 	// if validator function is set
 	// return its result directly
 	if (isFunction(rule.attrs)) {
-		return rule.attrs(target);
+		return rule.attrs.apply(rule, target);
 	}
 
 	// test if rule's requirements
 	// are satisfied
 	if (isPlainObject(rule.attrs)) {
-		return Promise.resolve(matches(target, rule.attrs));
+		return Promise.resolve(matches(target[0], rule.attrs));
 	}
 
 	// unknown type of attributes
