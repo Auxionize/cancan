@@ -13,6 +13,8 @@ const can = cancan.can;
 const chai = require('chai');
 chai.use(require('chai-as-promised'));
 
+require('co-mocha');
+
 chai.should();
 
 
@@ -40,6 +42,9 @@ class Product {
  */
 
 describe('cancan', function () {
+	beforeEach(function () {
+		cancan.reset();
+	});
 
 	it('allow one action', function* () {
 
@@ -96,7 +101,7 @@ describe('cancan', function () {
 	});
 
 	it('allow only certain items', function* () {
-		cancan.configure(User, function (user) {
+		cancan.reset().configure(User, function (user) {
 			this.can('read', Product, {published: true});
 		});
 
@@ -104,13 +109,13 @@ describe('cancan', function () {
 		let privateProduct = new Product();
 		let publicProduct = new Product({published: true});
 
-		(yield can(user, 'read', privateProduct)).should.equal(false);
-		(yield can(user, 'read', publicProduct)).should.equal(true);
+		(yield can(user, 'read', privateProduct)).should.equal(false, 'A private product is readable');
+		(yield can(user, 'read', publicProduct)).should.equal(true, 'A public product is not readable');
 	});
 
 	it('allow only certain items via validator function', function* () {
 		cancan.configure(User, function (user) {
-			this.can('read', Product, function (product) {
+			this.can('read', Product, function* (product) {
 				return product.get('published') === true;
 			});
 		});
@@ -119,8 +124,8 @@ describe('cancan', function () {
 		let privateProduct = new Product();
 		let publicProduct = new Product({published: true});
 
-		(yield can(user, 'read', privateProduct)).should.equal(false);
-		(yield can(user, 'read', publicProduct)).should.equal(true);
+		(yield can(user, 'read', privateProduct)).should.equal(false, 'A private product is readable');
+		(yield can(user, 'read', publicProduct)).should.equal(true, 'A public product is not readable');
 	});
 
 	it('allow only certain items via asyncronous validator function', function* () {
@@ -142,9 +147,23 @@ describe('cancan', function () {
 		(yield can(user, 'read', publicProduct)).should.equal(true, 'A public product is not readable');
 	});
 
+	it('allow many arguments to validator function', function* () {
+		cancan.configure(User, function (user) {
+			this.can('read', Product, function* (product, subProduct) {
+				return product.get('published') === true && subProduct.isViewable === 'yes';
+			});
+		});
+
+		let user = new User();
+		let product = new Product({published: true});
+
+		(yield can(user, 'read', product, { isViewable: 'yes' })).should.equal(true);
+		(yield can(user, 'read', product, { isViewable: 'no' })).should.equal(false);
+	});
+
 	it('throw an exception', function* () {
 		cancan.configure(User, function (user) {
-			this.can('read', Product, function (product) {
+			this.can('read', Product, function* (product) {
 				return product.get('published') === true;
 			});
 		});

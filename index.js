@@ -20,7 +20,11 @@ module.exports = {
 	configure: configure,
 	authorize: authorize,
 	cannot: cannot,
-	can: can
+	can: can,
+	reset: function () {
+		entityConfigs = [];
+		return this;
+	}
 };
 
 
