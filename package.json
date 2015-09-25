@@ -1,6 +1,6 @@
 {
   "name": "cancan-async",
-  "version": "1.0.0",
+  "version": "2.1.1-alpha",
   "description": "Authorize asyncronously with pleasure",
   "author": "Auxionize <auxionize@gmail.com>",
   "license": "MIT",
