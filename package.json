@@ -1,15 +1,15 @@
 {
-  "name": "cancan",
+  "name": "cancan-async",
   "version": "1.0.0",
-  "description": "Authorize with pleasure",
-  "author": "Vadim Demedes <vdemedes@gmail.com>",
+  "description": "Authorize asyncronously with pleasure",
+  "author": "Auxionize <auxionize@gmail.com>",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/vdemedes/cancan"
+    "url": "https://github.com/Auxionize/cancan-async.git"
   },
   "bugs": {
-    "url": "https://github.com/vdemedes/cancan/issues"
+    "url": "https://github.com/Auxionize/cancan-async/issues"
   },
   "dependencies": {
     "co": "^4.6.0",
