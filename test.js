@@ -22,11 +22,7 @@ chai.should();
  * Example classes
  */
 
-class User {
-
-}
-
-class Product {
+class Entity {
 	constructor(attrs) {
 		this.attrs = attrs || {};
 	}
@@ -34,6 +30,12 @@ class Product {
 	get(key) {
 		return this.attrs[key];
 	}
+}
+
+class User extends Entity {
+}
+
+class Product extends Entity {
 }
 
 
@@ -191,6 +193,9 @@ describe('cancan', function () {
 			this.can('read', Product, function* (product) {
 				return product.get('published') === true ? true : message;
 			});
+			this.can('write', Product, function* (product) {
+				return product.get('published') === true ? true : false;
+			});
 		});
 
 		let user = new User();
@@ -205,8 +210,17 @@ describe('cancan', function () {
 		let message = "The product is not published yet!";
 
 		cancan.configure(User, function (user) {
-			this.can('read', Product, function* (product) {
+			this.addRule('read', Product, function* (product) {
 				return product.get('published') === true ? true : message;
+			});
+		});
+		cancan.configure(User, function (user) {
+			this.addRule('write', Product, function* (product) {
+				return product.get('published') === true ? true : false;
+			});
+
+			this.addRule('login', User, function* (user) {
+				return user.get('banned') === false;
 			});
 		});
 

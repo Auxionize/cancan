@@ -47,6 +47,9 @@ let entityConfigs = [];
  */
 
 function configure(entity, config) {
+	if (!isFunction(config)) {
+		throw new Error('Config must be a function!');
+	}
 	entityConfigs.push({
 		entity: entity,
 		config: config
@@ -61,35 +64,23 @@ function configure(entity, config) {
  * @param  {Object} model  - class/entity instance
  * @param  {String} action - action name
  * @param  {Object} target - target instance
- * @return {Promise.<Boolean>}
+ * @return {Promise.<any>}
  */
 function can(model, action, target) {
-	// find a configuration for a model
-	let abilities = entityConfigs
+	let ability = entityConfigs
 		.filter(function (item) {
 			// check if model is an instance of the current entity
-			return isFunction(item.config) && model.constructor === item.entity
+			return model.constructor === item.entity
 		})
-		.map(function (item) {
-			// configure rules for this entity instance
-			var ability = new Ability();
+		.reduce(function (ability, item) {
 			item.config.call(ability, model);
-
 			return ability;
-		});
+		}, new Ability());
 
 	let args = Array.prototype.slice.call(arguments, 1);
 
 	return co(function* () {
-		let result;
-		for (let i = 0; i < abilities.length; i++) {
-			result = yield abilities[i].test.apply(abilities[i], args);
-			if (result === true) {
-				return true;
-			}
-		}
-
-		return result;
+		return yield ability.test.apply(ability, args);
 	});
 }
 
