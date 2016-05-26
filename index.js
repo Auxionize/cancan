@@ -81,13 +81,15 @@ function can(model, action, target) {
 	let args = Array.prototype.slice.call(arguments, 1);
 
 	return co(function* () {
+		let result;
 		for (let i = 0; i < abilities.length; i++) {
-			if (yield abilities[i].test.apply(abilities[i], args)) {
+			result = yield abilities[i].test.apply(abilities[i], args);
+			if (result === true) {
 				return true;
 			}
 		}
 
-		return false;
+		return result;
 	});
 }
 
@@ -111,9 +113,10 @@ function cannot() {
 function authorize() {
 	return can.apply(null, arguments)
 		.then(function (result) {
-			if (!result) {
+			if (result !== true) {
 				var err = new Error('Not authorized');
 				err.status = 401;
+				err.result = result;
 
 				return Promise.reject(err);
 			}
@@ -185,19 +188,23 @@ Ability.prototype.addRule = function addRule(actions, targets, attrs) {
  */
 
 Ability.prototype.test = function* test(action, target) {
-	let args = Array.prototype.slice.call(arguments, 1);
+	let args = Array.prototype.slice.call(arguments, 1),
+		attrsMatchResult = false;
 
 	// find a rule that matches the requested action and target
 	for (var i = 0; i < this.rules.length; i++) {
 		if (actionMatches(action, this.rules[i]) &&
-			targetMatches(target, this.rules[i]) &&
-			(yield attrsMatch(args, this.rules[i]))) {
-			return true;
+			targetMatches(target, this.rules[i]) ) {
+			attrsMatchResult = yield attrsMatch(args, this.rules[i]);
+
+			if (attrsMatchResult === true) {
+				return true;
+			}
 		}
 	}
 
 	// There are no matching rules
-	return false;
+	return attrsMatchResult;
 };
 
 

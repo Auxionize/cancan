@@ -184,4 +184,44 @@ describe('cancan', function () {
 		throw new Error('Exception was not fired');
 	});
 
+	it('validator function may return non-boolean value', function* () {
+		let message = "The product is not published yet!";
+
+		cancan.configure(User, function (user) {
+			this.can('read', Product, function* (product) {
+				return product.get('published') === true ? true : message;
+			});
+		});
+
+		let user = new User();
+		let privateProduct = new Product({published: false});
+		let publicProduct = new Product({published: true});
+
+		(yield can(user, 'read', privateProduct)).should.equal(message, 'A private product is readable');
+		(yield can(user, 'read', publicProduct)).should.equal(true, 'A public product is not readable');
+	});
+
+	it('authorize() exception contains return value of last failed validator function', function* () {
+		let message = "The product is not published yet!";
+
+		cancan.configure(User, function (user) {
+			this.can('read', Product, function* (product) {
+				return product.get('published') === true ? true : message;
+			});
+		});
+
+		let user = new User();
+		let privateProduct = new Product({published: false});
+		let thrown = false;
+
+		try {
+			yield authorize(user, 'read', privateProduct);
+		} catch (e) {
+			e.status.should.equal(401);
+			e.result.should.equal(message);
+			thrown = true;
+		}
+
+		thrown.should.equal(true);
+	});
 });
