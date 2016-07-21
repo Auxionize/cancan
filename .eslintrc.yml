@@ -1,0 +1,37 @@
+env:
+  browser: true
+  commonjs: true
+  es6: true
+  node: true
+extends: google
+installedESLint: true
+parserOptions:
+  sourceType: module
+rules:
+  indent:
+    - error
+    - tab
+  linebreak-style:
+    - error
+    - unix
+#   quotes:
+#     - error
+#     - double
+  semi:
+    - error
+    - always
+  max-len:
+    - 1
+    - code: 120
+  no-unused-expressions:
+    - 0
+  new-cap:
+    - 0
+  generator-star-spacing:
+    - off
+  space-before-function-paren:
+    - off
+  no-eq-null:
+    - off
+  eqeqeq:
+    - off
