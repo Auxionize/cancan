@@ -171,10 +171,13 @@ Ability.prototype.test = function* test(action, target) {
 	for (var i = 0; i < this.rules.length; i++) {
 		if (actionMatches(action, this.rules[i]) &&
 			targetMatches(target, this.rules[i])) {
-			attrsMatchResult = yield attrsMatch(args, this.rules[i]);
+			let r = yield attrsMatch(args, this.rules[i]);
 
-			if (attrsMatchResult === true) {
+			if (r === true) {
 				return true;
+			}
+			if (typeof r !== 'undefined') {
+				attrsMatchResult = r;
 			}
 		}
 	}
